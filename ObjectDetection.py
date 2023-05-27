@@ -45,7 +45,7 @@ class ObjectDetection:
         _starting_time = time.time()
 
         cap = self.__init_window()
-        if not cap.isOpened():
+        if not self.__cur_cap.isOpened():
             return
 
         start_frame = self.__get_frame(True)
