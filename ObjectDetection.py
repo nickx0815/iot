@@ -48,7 +48,7 @@ class ObjectDetection:
         if not cap.isOpened():
             return
 
-        start_frame = self.__get_frame(True)[1]
+        start_frame = self.__get_frame(True)
 
         while True:
 
@@ -56,7 +56,7 @@ class ObjectDetection:
                 continue
 
             _, frame = cap.read()
-            frame_bw = self.__get_frame()[1]
+            frame_bw = self.__get_frame()
             difference = cv2.absdiff(frame_bw, start_frame)
             threshold = cv2.threshold(difference, 25, 255, cv2.THRESH_BINARY)[1]
             start_frame = frame_bw
