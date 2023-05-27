@@ -1,4 +1,9 @@
 import requests
+import cv2
+import imutils
+import time
+import signal
+import sys
 
 
 class WlanPlugConnector:
@@ -24,13 +29,6 @@ class WlanPlugConnector:
         if self.__state_wlan_plug or force_off:
             requests.get(self.__get_cmd_path(self.__off))
             self.__state_wlan_plug = False
-
-import cv2
-import imutils
-import time
-import signal
-import sys
-from Connector import WlanPlugConnector
 
 
 class ObjectDetection:
@@ -134,6 +132,4 @@ class ObjectDetection:
         self.__WlanPlugConnector.turn_off()
 
 if __name__ == '__main__':
-    from ObjectDetection import ObjectDetection
-
     ObjectDetection().run()
