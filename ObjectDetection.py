@@ -9,31 +9,46 @@ from Connector import WlanPlugConnector
 class ObjectDetection:
 
     __test_mode = False
-    __wait_till_detection = 4
-    __threshold = 300000
+    __wait_till_detection = 5
+    __threshold = 100000
     __wlan_plug_on = 0
     __wlan_plug_off = 1
-    __wait_turn_off = 5
-
+    __wait_turn_off = 15
+    __cur_cap = False
 
     def __init__(self):
         self.__WlanPlugConnector = WlanPlugConnector()
         self.__register_abort_signal()
 
+    def __init_window(self):
+        cap = cv2.VideoCapture(cv2.CAP_ANY)
+        cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+        self.__cur_cap = cap
+
+    def __get_frame(self, s=False):
+        cap = self.__cur_cap
+        if not cap:
+            raise Exception("no window initialized yet")
+        _, frame = cap.read()
+        frame = imutils.resize(frame, width=500)
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        if s:
+            v = (21, 21)
+        else:
+            v = (5, 5)
+
+        return cv2.GaussianBlur(frame, v, 0)
+
     def run(self):
         time_last_movement = False
         _starting_time = time.time()
-        cap = cv2.VideoCapture(cv2.CAP_ANY)
 
+        cap = self.__init_window()
         if not cap.isOpened():
             return
 
-        cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
-        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
-        _, start_frame = cap.read()
-        start_frame = imutils.resize(start_frame, width=500)
-        start_frame = cv2.cvtColor(start_frame, cv2.COLOR_BGR2GRAY)
-        start_frame = cv2.GaussianBlur(start_frame, (21, 21), 0)
+        start_frame = self.__get_frame(True)[1]
 
         while True:
 
@@ -41,15 +56,13 @@ class ObjectDetection:
                 continue
 
             _, frame = cap.read()
-            frame = imutils.resize(frame, width=500)
-            frame_bw = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            frame_bw = cv2.GaussianBlur(frame_bw, (5, 5), 0)
+            frame_bw = self.__get_frame()[1]
             difference = cv2.absdiff(frame_bw, start_frame)
             threshold = cv2.threshold(difference, 25, 255, cv2.THRESH_BINARY)[1]
             start_frame = frame_bw
 
             if threshold.sum() > self.__threshold:
-                print(threshold)
+                print(threshold.sum())
                 time_last_movement = time.time()
                 self.__call_command(self.__wlan_plug_on)
             else:
@@ -66,6 +79,8 @@ class ObjectDetection:
             self.__turn_wlan_plug_on()
         elif c == self.__wlan_plug_off:
             self.__turn_wlan_plug_off()
+        else:
+            raise Exception("command not found")
 
     def __register_abort_signal(self):
         def signal_handler(sig, frame):
