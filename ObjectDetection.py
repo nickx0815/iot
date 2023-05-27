@@ -40,12 +40,16 @@ class ObjectDetection:
 
         return cv2.GaussianBlur(frame, v, 0)
 
+    def __get_window(self):
+        return self.__cur_cap
+
     def run(self):
         time_last_movement = False
         _starting_time = time.time()
 
-        cap = self.__init_window()
-        if not self.__cur_cap.isOpened():
+        self.__init_window()
+        cap = self.__get_window()
+        if not cap.isOpened():
             return
 
         start_frame = self.__get_frame(True)
