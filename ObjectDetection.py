@@ -8,7 +8,7 @@ from Connector import WlanPlugConnector
 
 class ObjectDetection:
 
-    __test_mode = True
+    __test_mode = False
     __wait_till_detection = 4
     __threshold = 300000
     __wlan_plug_on = 0
@@ -26,7 +26,6 @@ class ObjectDetection:
         cap = cv2.VideoCapture(cv2.CAP_ANY)
 
         if not cap.isOpened():
-            print("Cannot open camera")
             return
 
         cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
@@ -50,6 +49,7 @@ class ObjectDetection:
             start_frame = frame_bw
 
             if threshold.sum() > self.__threshold:
+                print(threshold)
                 time_last_movement = time.time()
                 self.__call_command(self.__wlan_plug_on)
             else:
@@ -60,6 +60,8 @@ class ObjectDetection:
                     self.__call_command(self.__wlan_plug_off)
 
     def __call_command(self, c):
+        if self.__test_mode:
+            return
         if c == self.__wlan_plug_on:
             self.__turn_wlan_plug_on()
         elif c == self.__wlan_plug_off:
@@ -80,12 +82,8 @@ class ObjectDetection:
             return False
 
     def __turn_wlan_plug_on(self):
-        if self.__test_mode:
-            return
         self.__WlanPlugConnector.turn_on()
 
     def __turn_wlan_plug_off(self):
-        if self.__test_mode:
-            return
         self.__WlanPlugConnector.turn_off()
 
