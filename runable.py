@@ -52,6 +52,7 @@ class ObjectDetection:
         self.__WlanPlugConnector = WlanPlugConnector()
         self.__register_abort_signal()
         self.__test_mode = test_mode
+        print(test_mode)
         self.__wait_till_detection = wait
         self.__threshold = threshold
         self.__wait_turn_off = wait_off
@@ -142,9 +143,19 @@ class ObjectDetection:
     def __turn_wlan_plug_off(self):
         self.__WlanPlugConnector.turn_off()
 
+def str2bool(v):
+    if isinstance(v, bool):
+        return v
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected.')
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--test_mode', dest='test_mode', type=bool, default=ObjectDetection._default_test_mode)
+    parser.add_argument('--test_mode', dest="test_mode", type=str2bool, default=ObjectDetection._default_test_mode)
     parser.add_argument('--wait', dest='wait', type=int, default=ObjectDetection._default_wait)
     parser.add_argument('--threshold', dest='threshold', type=int, default=ObjectDetection._default_threshold)
     parser.add_argument('--wait_off', dest='wait_off', type=int, default=ObjectDetection._default_wait_off)
