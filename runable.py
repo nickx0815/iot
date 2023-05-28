@@ -40,21 +40,23 @@ class ObjectDetection:
 
     _default_test_mode = True
     _default_wait = 5
-    _default_threshold = 500
+    _default_threshold_low = 500
+    _default_threshold_high = -1
     _default_wait_off = 15
 
 
     def __init__(self,
                  test_mode=_default_test_mode,
                  wait=_default_wait,
-                 threshold=_default_threshold,
+                 threshold_low=_default_threshold_low,
+                 threshold_high=_default_threshold_high,
                  wait_off=_default_wait_off):
         self.__WlanPlugConnector = WlanPlugConnector()
         self.__register_abort_signal()
         self.__test_mode = test_mode
-        print(test_mode)
         self.__wait_till_detection = wait
-        self.__threshold = threshold
+        self.__threshold_low = threshold_low
+        self.__threshold_high = threshold_high
         self.__wait_turn_off = wait_off
 
     def __init_window(self):
@@ -101,16 +103,14 @@ class ObjectDetection:
             difference = cv2.absdiff(frame_bw, start_frame)
             threshold = cv2.threshold(difference, 25, 255, cv2.THRESH_BINARY)[1]
             start_frame = frame_bw
-
-            if threshold.sum() > self.__threshold:
+            if self.__threshold_low < threshold.sum() < self.__threshold_high:
                 print(threshold.sum())
                 time_last_movement = time.time()
                 self.__call_command(self.__wlan_plug_on)
             else:
                 if not time_last_movement:
                     continue
-                seconds_since_last_movement = int(time.time() - time_last_movement)
-                if seconds_since_last_movement > self.__wait_turn_off:
+                if int(time.time() - time_last_movement) > self.__wait_turn_off:
                     self.__call_command(self.__wlan_plug_off)
 
     def __call_command(self, c):
@@ -157,7 +157,9 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--test_mode', dest="test_mode", type=str2bool, default=ObjectDetection._default_test_mode)
     parser.add_argument('--wait', dest='wait', type=int, default=ObjectDetection._default_wait)
-    parser.add_argument('--threshold', dest='threshold', type=int, default=ObjectDetection._default_threshold)
+    parser.add_argument('--threshold_low', dest='threshold_low', type=int, default=ObjectDetection._default_threshold_low)
+    parser.add_argument('--threshold_high', dest='threshold_high', type=int, default=ObjectDetection._default_threshold_high)
     parser.add_argument('--wait_off', dest='wait_off', type=int, default=ObjectDetection._default_wait_off)
     args = parser.parse_args()
-    ObjectDetection(test_mode=args.test_mode, wait_off=args.wait_off, wait=args.wait, threshold=args.threshold).run()
+    ObjectDetection(test_mode=args.test_mode, wait_off=args.wait_off, wait=args.wait, threshold_low=args.threshold_low,
+                    threshold_high=args.threshold_high).run()
