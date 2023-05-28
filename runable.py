@@ -4,6 +4,7 @@ import imutils
 import time
 import signal
 import sys
+import argparse
 
 
 class WlanPlugConnector:
@@ -33,17 +34,27 @@ class WlanPlugConnector:
 
 class ObjectDetection:
 
-    __test_mode = False
-    __wait_till_detection = 5
-    __threshold = 100000
+    __cur_cap = False
     __wlan_plug_on = 0
     __wlan_plug_off = 1
-    __wait_turn_off = 15
-    __cur_cap = False
 
-    def __init__(self):
+    _default_test_mode = True
+    _default_wait = 5
+    _default_threshold = 500
+    _default_wait_off = 15
+
+
+    def __init__(self,
+                 test_mode=_default_test_mode,
+                 wait=_default_wait,
+                 threshold=_default_threshold,
+                 wait_off=_default_wait_off):
         self.__WlanPlugConnector = WlanPlugConnector()
         self.__register_abort_signal()
+        self.__test_mode = test_mode
+        self.__wait_till_detection = wait
+        self.__threshold = threshold
+        self.__wait_turn_off = wait_off
 
     def __init_window(self):
         cap = cv2.VideoCapture(cv2.CAP_ANY)
@@ -132,4 +143,10 @@ class ObjectDetection:
         self.__WlanPlugConnector.turn_off()
 
 if __name__ == '__main__':
-    ObjectDetection().run()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--test_mode', dest='test_mode', type=bool, default=ObjectDetection._default_test_mode)
+    parser.add_argument('--wait', dest='wait', type=int, default=ObjectDetection._default_wait)
+    parser.add_argument('--threshold', dest='threshold', type=int, default=ObjectDetection._default_threshold)
+    parser.add_argument('--wait_off', dest='wait_off', type=int, default=ObjectDetection._default_wait_off)
+    args = parser.parse_args()
+    ObjectDetection(test_mode=args.testmode, wait_off=args.wait_off, wait=args.wait, threshold=args.threshold).run()

@@ -8,17 +8,17 @@ from Connector import WlanPlugConnector
 
 class ObjectDetection:
 
-    __test_mode = False
-    __wait_till_detection = 5
-    __threshold = 100000
+    __cur_cap = False
     __wlan_plug_on = 0
     __wlan_plug_off = 1
-    __wait_turn_off = 15
-    __cur_cap = False
 
-    def __init__(self):
+    def __init__(self, test_mode=True, wait=5, threshold=100000, wait_off=15):
         self.__WlanPlugConnector = WlanPlugConnector()
         self.__register_abort_signal()
+        self.__test_mode = test_mode
+        self.__wait_till_detection = wait
+        self.__threshold = threshold
+        self.__wait_turn_off = wait_off
 
     def __init_window(self):
         cap = cv2.VideoCapture(cv2.CAP_ANY)
@@ -105,4 +105,3 @@ class ObjectDetection:
 
     def __turn_wlan_plug_off(self):
         self.__WlanPlugConnector.turn_off()
-
