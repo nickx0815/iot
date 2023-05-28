@@ -149,4 +149,4 @@ if __name__ == '__main__':
     parser.add_argument('--threshold', dest='threshold', type=int, default=ObjectDetection._default_threshold)
     parser.add_argument('--wait_off', dest='wait_off', type=int, default=ObjectDetection._default_wait_off)
     args = parser.parse_args()
-    ObjectDetection(test_mode=args.testmode, wait_off=args.wait_off, wait=args.wait, threshold=args.threshold).run()
+    ObjectDetection(test_mode=args.test_mode, wait_off=args.wait_off, wait=args.wait, threshold=args.threshold).run()
