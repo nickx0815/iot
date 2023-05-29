@@ -8,7 +8,6 @@ import argparse
 
 
 class WlanPlugConnector:
-
     __main_path = "http://delock-4004.local/"
     __main_path_cmd = "cm?cmnd=Power%20"
     __on = "On"
@@ -34,13 +33,12 @@ class WlanPlugConnector:
 
 
 class ObjectDetection:
-
     __cur_cap = False
     __wlan_plug_on = 0
     __wlan_plug_off = 1
     _default_wait = 5
     _default_threshold_low = 1000
-    _default_threshold_high = 1000000
+    _default_threshold_high = 100000000
     _default_wait_off = 10
 
     def __init__(self,
@@ -100,6 +98,7 @@ class ObjectDetection:
             threshold = cv2.threshold(difference, 25, 255, cv2.THRESH_BINARY)[1]
             start_frame = frame_bw
             if self.__threshold_low < threshold.sum() < self.__threshold_high:
+                print(threshold.sum())
                 time_last_movement = time.time()
                 self.__call_command(self.__wlan_plug_on)
             else:
@@ -120,6 +119,7 @@ class ObjectDetection:
         def signal_handler(sig, frame):
             self.__turn_wlan_plug_off()
             sys.exit(0)
+
         signal.signal(signal.SIGINT, signal_handler)
 
     def __skip(self, start_time):
@@ -152,9 +152,12 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--test_mode', dest="test_mode", type=str2bool)
     parser.add_argument('--wait', dest='wait', type=int, default=ObjectDetection._default_wait)
-    parser.add_argument('--threshold_low', dest='threshold_low', type=int, default=ObjectDetection._default_threshold_low)
-    parser.add_argument('--threshold_high', dest='threshold_high', type=int, default=ObjectDetection._default_threshold_high)
+    parser.add_argument('--threshold_low', dest='threshold_low', type=int,
+                        default=ObjectDetection._default_threshold_low)
+    parser.add_argument('--threshold_high', dest='threshold_high', type=int,
+                        default=ObjectDetection._default_threshold_high)
     parser.add_argument('--wait_off', dest='wait_off', type=int, default=ObjectDetection._default_wait_off)
     args = parser.parse_args()
     ObjectDetection(test_mode=args.test_mode, wait_off=args.wait_off, wait=args.wait, threshold_low=args.threshold_low,
                     threshold_high=args.threshold_high).run()
+
