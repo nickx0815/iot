@@ -15,14 +15,15 @@ class WlanPlugConnector:
     __off = "off"
     __state_wlan_plug = False
 
-    def __init__(self):
+    def __init__(self, test_mode):
         self.turn_off(True)
+        self.__test_mode = test_mode
 
     def __get_cmd_path(self, c):
         return f"{self.__main_path}{self.__main_path_cmd}{c}"
 
     def turn_on(self):
-        if not self.__state_wlan_plug:
+        if not self.__state_wlan_plug and not self.__test_mode:
             requests.get(self.__get_cmd_path(self.__on))
             self.__state_wlan_plug = True
 
@@ -37,23 +38,19 @@ class ObjectDetection:
     __cur_cap = False
     __wlan_plug_on = 0
     __wlan_plug_off = 1
-
-    _default_test_mode = True
     _default_wait = 5
-    _default_threshold_low = 500
-    _default_threshold_high = -1
-    _default_wait_off = 15
-
+    _default_threshold_low = 1000
+    _default_threshold_high = 1000000
+    _default_wait_off = 10
 
     def __init__(self,
-                 test_mode=_default_test_mode,
+                 test_mode=True,
                  wait=_default_wait,
                  threshold_low=_default_threshold_low,
                  threshold_high=_default_threshold_high,
                  wait_off=_default_wait_off):
-        self.__WlanPlugConnector = WlanPlugConnector()
+        self.__WlanPlugConnector = WlanPlugConnector(test_mode)
         self.__register_abort_signal()
-        self.__test_mode = test_mode
         self.__wait_till_detection = wait
         self.__threshold_low = threshold_low
         self.__threshold_high = threshold_high
@@ -65,18 +62,17 @@ class ObjectDetection:
         cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
         self.__cur_cap = cap
 
-    def __get_frame(self, s=False):
+    def __get_frame(self, start_frame=False):
         cap = self.__cur_cap
         if not cap:
             raise Exception("no window initialized yet")
         _, frame = cap.read()
         frame = imutils.resize(frame, width=500)
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        if s:
+        if start_frame:
             v = (21, 21)
         else:
             v = (5, 5)
-
         return cv2.GaussianBlur(frame, v, 0)
 
     def __get_window(self):
@@ -104,7 +100,6 @@ class ObjectDetection:
             threshold = cv2.threshold(difference, 25, 255, cv2.THRESH_BINARY)[1]
             start_frame = frame_bw
             if self.__threshold_low < threshold.sum() < self.__threshold_high:
-                print(threshold.sum())
                 time_last_movement = time.time()
                 self.__call_command(self.__wlan_plug_on)
             else:
@@ -114,8 +109,6 @@ class ObjectDetection:
                     self.__call_command(self.__wlan_plug_off)
 
     def __call_command(self, c):
-        if self.__test_mode:
-            return
         if c == self.__wlan_plug_on:
             self.__turn_wlan_plug_on()
         elif c == self.__wlan_plug_off:
@@ -143,6 +136,7 @@ class ObjectDetection:
     def __turn_wlan_plug_off(self):
         self.__WlanPlugConnector.turn_off()
 
+
 def str2bool(v):
     if isinstance(v, bool):
         return v
@@ -153,9 +147,10 @@ def str2bool(v):
     else:
         raise argparse.ArgumentTypeError('Boolean value expected.')
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--test_mode', dest="test_mode", type=str2bool, default=ObjectDetection._default_test_mode)
+    parser.add_argument('--test_mode', dest="test_mode", type=str2bool)
     parser.add_argument('--wait', dest='wait', type=int, default=ObjectDetection._default_wait)
     parser.add_argument('--threshold_low', dest='threshold_low', type=int, default=ObjectDetection._default_threshold_low)
     parser.add_argument('--threshold_high', dest='threshold_high', type=int, default=ObjectDetection._default_threshold_high)
