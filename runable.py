@@ -66,7 +66,7 @@ class ObjectDetection:
             raise Exception("no window initialized yet")
         _, frame = cap.read()
         frame = imutils.resize(frame, width=500)
-        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        #frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         if start_frame:
             v = (21, 21)
         else:
