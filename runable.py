@@ -97,8 +97,9 @@ class ObjectDetection:
             difference = cv2.absdiff(frame_bw, start_frame)
             threshold = cv2.threshold(difference, 25, 255, cv2.THRESH_BINARY)[1]
             start_frame = frame_bw
-            if self.__threshold_low < threshold.sum() < self.__threshold_high:
+            if threshold.sum()>0:
                 print(threshold.sum())
+            if self.__threshold_low < threshold.sum() < self.__threshold_high:
                 time_last_movement = time.time()
                 self.__call_command(self.__wlan_plug_on)
             else:
